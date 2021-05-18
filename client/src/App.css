@@ -1,0 +1,37 @@
+a:hover, a:visited, a:link, a:active{
+    text-decoration: none;
+}
+
+.center-box{
+    text-align: -webkit-center;
+}
+
+
+.MuiAutocomplete-listbox{
+    /* direction: rtl; */
+
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    /* overflow: auto; */
+    height: 100%;
+    overscroll-behavior: none;
+    /* color: white;
+    background: transparent; */
+  }
+
+html {
+    /* overflow: hidden; */
+    height: 100%;
+    overscroll-behavior: none;
+}
+
+#wrapper {
+    min-height: 100%; 
+}
+.some {
+    background-color: bisque;
+}
+
