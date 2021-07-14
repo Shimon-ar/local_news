@@ -14,7 +14,17 @@ export type Article = {
     urlToImage: string,
     publishedAt: string,
     global_id: string,
-    isExternal: boolean
+    isExternal: boolean,
+    image_name: string,
+    status: string
+}
+
+export type Msg = {
+    isNew: boolean,
+    to: string,
+    content: string,
+    time: string,
+    _id: number
 }
 
 export type Article_data = {
@@ -22,6 +32,13 @@ export type Article_data = {
     subtitle: string,
     image: string,
     body: string[],
+    isExternal: boolean
+}
+
+export type User = {
+    name: string,
+    id: number,
+    is_manager: boolean
 }
 
 export type HomeData = {
@@ -37,9 +54,28 @@ export const Routes = {
     home: '/home',
     publish: '/publish',
     article: '/article',
-    login: '/login'
+    login: '/login',
+    confirmArticle: '/confirmArticle',
+    favorites: '/favorites',
+    myArticles: '/myArticles'
 }
 
 export type City = {
     name_he: string
 }
+
+export const CATEGORY = new Map([
+    ['technology', 'טכנלוגיה'],
+    ['sports', 'ספורט'],
+    ['science', 'מדע'],
+    ['general', 'כללי']
+]);
+
+export const STATUS = new Map([
+    ['APPROVED', 'מאושר'],
+    ['UNAPPROVED', 'לא מאושר'],
+    ['PENDING', 'ממתין'],
+]);
+
+export const APPROVED = 'APPROVED';
+export const UNAPPROVED = 'UNAPPROVED';

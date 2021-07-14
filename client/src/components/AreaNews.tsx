@@ -14,22 +14,26 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import IconButton from '@material-ui/core/IconButton';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { RouteComponentProps } from 'react-router';
+import { withRouter } from 'react-router-dom';
 
 
 
 const useStyles = makeStyles({
     root: {
-        // paddingLeft: '130px',
-        // paddingRight: '130px',
-        minWidth: "100%",
-        minHeight: "100vh",
-        // display: "flex",
+        paddingLeft: "130px",
+        paddingRight: "130px",
+        paddingBottom: '50px'
     },
     label: {
         textAlignLast: 'center'
     },
     labelUpdates: {
-        maxInlineSize: 'max-content'
+        maxInlineSize: 'max-content',
+        backgroundColor: '#c60021',
+        color: '#f6f6f8',
+        paddingBottom: '4px',
+        paddingLeft: '3px',
+        paddingRight: '3px'
 
     },
     typoUpdateLabel: {
@@ -39,7 +43,8 @@ const useStyles = makeStyles({
 
     textField: {
         width: '250px',
-        direction: 'rtl'
+        direction: 'rtl',
+        borderColor: 'black'
 
     },
 
@@ -47,11 +52,21 @@ const useStyles = makeStyles({
         direction: 'rtl',
     },
 
-    button: {
+    gridButton: {
         textAlign: 'center',
-        marginTop: '5px'
-        // marginRight: '20px'
+        marginTop: '5px',
+        marginBottom: '50px'
+
     },
+    button: {
+        borderWidth: '1.5px',
+        fontWeight: 500,
+        width: '250px',
+        fontSize: '20px',
+        padding: '0',
+        borderColor: 'black'
+    },
+
 
     space: {
         marginBottom: '50px'
@@ -126,10 +141,10 @@ const AreaNews: FunctionComponent<RouteComponentProps> = (props) => {
 
     return (
         <div dir="rtl" className={classes.root}>
-        
+
             <Grid container>
                 <Grid item xs={12} className={classNames('center-box', classes.space)} >
-                    <Box color="white" bgcolor="error.main" className={classes.labelUpdates}>
+                    <Box borderRadius={5}  className={classes.labelUpdates}>
                         <Typography variant={'h3'} className={classes.typoUpdateLabel}>   עדכונים לפי אזור </Typography>
                     </Box>
                 </Grid>
@@ -148,14 +163,14 @@ const AreaNews: FunctionComponent<RouteComponentProps> = (props) => {
                     />
                 </Grid>
 
-                <Grid item xs={12} className={classNames('center-box', classes.button)} >
-                    <Button variant={'contained'} color='primary'
+                <Grid item xs={12} className={classNames('center-box', classes.gridButton)} >
+                    <Button variant={'outlined'}  
                         onClick=
                         {() => {
                             perform_search(city, 1);
                             setPage(1);
                         }}
-                        className={classes.textField}>חפש</Button>
+                        className={classes.button}>חפש</Button>
                 </Grid>
 
                 {
@@ -168,11 +183,11 @@ const AreaNews: FunctionComponent<RouteComponentProps> = (props) => {
                                     <CardNews {...props} article={article} scale='100px' isFlex={true} />
                                 </Grid>
                             )) : isSearched ? page > 1 ? <Grid item className={classes.text}> <Typography>אין עוד תוצאות</Typography> </Grid> :
-                                         <Grid item className={classes.text}> <Typography variant='h5'>אין תוצאות עבור העיר המבוקשת</Typography>  </Grid>: <div></div>
+                                <Grid item className={classes.text}> <Typography variant='h5'>אין תוצאות עבור העיר המבוקשת</Typography>  </Grid> : <div></div>
                 }
             </Grid>
 
-            { isLoading ? <div></div> :
+            {isLoading ? <div></div> :
                 <Grid container justify='space-between' alignContent='stretch'>
                     <Grid item >
                         {page > 1 ?
@@ -200,4 +215,4 @@ const AreaNews: FunctionComponent<RouteComponentProps> = (props) => {
     )
 }
 
-export default AreaNews;
+export default withRouter(AreaNews);

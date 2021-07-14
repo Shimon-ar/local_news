@@ -11,9 +11,9 @@ export const useStyles = makeStyles((theme: Theme) =>
             // width: '100%',
             // height: '100vh'
             // minWidth: "100%",
-        
+
         },
-        height:{
+        height: {
             height: '100vh'
         },
 
@@ -26,7 +26,12 @@ export const useStyles = makeStyles((theme: Theme) =>
             alignSelf: 'center',
         },
         labelUpdates: {
-            maxInlineSize: 'max-content'
+            maxInlineSize: 'max-content',
+            backgroundColor: '#c60021',
+            color: '#f6f6f8',
+            paddingBottom: '4px',
+            paddingLeft: '3px',
+            paddingRight: '3px'
 
         },
         boxContent: {
@@ -41,7 +46,9 @@ export const useStyles = makeStyles((theme: Theme) =>
 
         typoUpdateLabel: {
             marginRight: '7px',
-            marginLeft: '7px'
+            marginLeft: '7px',
+            fontSize: '28px'
+
         },
 
         gridUpdateContent: {
@@ -59,37 +66,45 @@ export const useStyles = makeStyles((theme: Theme) =>
         },
 
         icon: {
-            marginRight: '5px'
+            marginRight: '5px',
+            color: 'black'
         },
 
         paperStyle: {
-            border: '4px solid',
-            borderColor: 'red',
+            border: '5px solid',
+            borderColor: '#c60021',
             textAlign: 'center',
             marginBottom: '55px',
+            backgroundColor: '#f6f6f8'
 
         },
+        text: {
+            color: '#f6f6f8'
+        },
+
         gridNews: {
             textAlign: 'right',
         },
-        
+
         descriptionText: {
             marginRight: '10px',
             fontSize: '12px'
         },
         titleText: {
-            marginRight: '10px',
+            marginRight: '15px',
             fontSize: '18px',
-            fontWeight: 700
+            fontWeight: 500,
+            marginTop: '5px'
 
         },
         button: {
-            marginRight: '5px'
+            color: 'black'
 
         },
         divider: {
             marginRight: '10px',
-            marginLeft: '10px'
+            marginLeft: '10px',
+
 
         },
         progress: {
@@ -104,10 +119,12 @@ export const useStyles = makeStyles((theme: Theme) =>
         },
         genre: {
             fontSize: '20px',
-            fontWeight: 700
+            fontWeight: 500,
+            color: 'black',
+            marginRight: '4px'
         }
 
-      
+
 
     }),
 );

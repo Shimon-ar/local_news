@@ -13,9 +13,9 @@ import CardNews from './CardNews';
 import { useStyles } from '../styles/HomeStyle';
 import { HomeData, Routes } from '../types';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { RouteComponentProps } from 'react-router-dom'
+import { RouteComponentProps, withRouter } from 'react-router-dom'
 import classNames from 'classnames'
-
+import InfoTwoToneIcon from '@material-ui/icons/InfoTwoTone';
 
 
 const Home: FunctionComponent<RouteComponentProps> = props => {
@@ -59,7 +59,7 @@ const Home: FunctionComponent<RouteComponentProps> = props => {
                         <Grid container>
 
                             <Grid item xs={12} className={classNames(classes.gridUpdateLabel, 'center-box')}>
-                                <Box color="white" bgcolor="error.main" className={classes.labelUpdates}>
+                                <Box boxShadow={3} borderRadius={5}  className={classes.labelUpdates}>
                                     <Typography variant={'h5'} className={classes.typoUpdateLabel}>מבזקים </Typography>
                                 </Box>
                             </Grid>
@@ -93,7 +93,7 @@ const Home: FunctionComponent<RouteComponentProps> = props => {
                                                 {headLinesButtons[index]}
                                             </Typography>
                                         </IconButton>
-                                        <Divider variant={'fullWidth'} />
+                                        <Divider  className={classes.divider}/>
                                     </Box>
 
                                     {
@@ -101,8 +101,10 @@ const Home: FunctionComponent<RouteComponentProps> = props => {
                                     
                                     
                                      <Box boxShadow={24} borderRadius={16} className={classes.paperStyle} >
-                                        <Box color="white" bgcolor="error.main" >
-                                            <Typography variant={'h6'} >{headLine} </Typography>
+                                        <Box style={{
+                                            backgroundColor: '#c60021'
+                                        }} >
+                                            <Typography className={classes.text} variant={'h5'} >{headLine} </Typography>
                                         </Box>
                                         <Grid container spacing={1} className={classes.gridNews}>
                                             <Grid item xs={12}>
@@ -113,13 +115,14 @@ const Home: FunctionComponent<RouteComponentProps> = props => {
                                             data ? data[dataKeys[index]].slice(1).map((article, index) => (
                                                 <Grid container key={index} className={classes.gridNews}>
                                                     <Grid item xs={12} >
-                                                        <Typography variant={'subtitle1'} color={'textSecondary'} className={classes.titleText}>
+                                                        <Typography variant={'subtitle1'} className={classes.titleText}>
                                                             {article.title}
                                                         </Typography>
                                                     </Grid>
                                                     <Grid item xs={12}>
-                                                        <Button size={'small'} color="primary" key={index} 
-                                                        onClick={() => onClickLabel('article/' + article.global_id)} className={classes.button}>מידע נוסף</Button>
+                                                        <IconButton className={classes.button} onClick={() => onClickLabel('article/' + article.global_id)}>
+                                                              <InfoTwoToneIcon/>
+                                                        </IconButton > 
                                                     </Grid>
                                                     <Grid item xs={12}>
                                                         <Divider className={classes.divider} />
@@ -141,7 +144,7 @@ const Home: FunctionComponent<RouteComponentProps> = props => {
 
 }
 
-export default Home;
+export default withRouter(Home);
 
 
 

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent, useState, useEffect, useContext } from 'react';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
@@ -14,6 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import { Routes } from '../types';
+import { UserContext } from '../context/UserContext';
 
 
 
@@ -31,7 +32,7 @@ const useStyles = makeStyles({
 
     },
     paper: {
-        // backgroundColor: 'white',
+        backgroundColor: '#f6f6f8',
         flexDirection: "column",
         textAlign: 'center',
         paddingLeft: '60px',
@@ -64,7 +65,7 @@ const useStyles = makeStyles({
         // '&:hover': {
         //     color: 'white',
         // }
-           
+
     },
     label: {
         direction: 'rtl',
@@ -79,7 +80,7 @@ const useStyles = makeStyles({
     dialog: {
         alignSelf: 'center'
     },
-     alert: {
+    alert: {
         backgroundColor: 'inherit',
 
     }
@@ -91,7 +92,7 @@ interface error {
 }
 
 enum routeType {
-    login='/login', createUser='/createUser'
+    login = '/login', createUser = '/createUser'
 }
 
 
@@ -101,6 +102,7 @@ const Login: FunctionComponent<RouteComponentProps> = (props) => {
     const [password, setPassword] = useState<string>('');
     const [errors, setErrors] = useState<error>({ username: false, password: false });
     const [openDialog, setOpenDialog] = useState<{ open: boolean, text: string }>({ open: false, text: '' });
+    const userContext = useContext(UserContext);
 
 
 
@@ -124,45 +126,50 @@ const Login: FunctionComponent<RouteComponentProps> = (props) => {
         const data = new FormData();
         data.append('username', username);
         data.append('password', password);
-        
+
         sendPost(data, route);
     }
 
     const onCloseDialog = () => {
-        setOpenDialog({open:false, text:''});
+        setOpenDialog({ open: false, text: '' });
     }
 
 
     const sendPost = (data: FormData, route: string) => {
         if (!data)
             return;
-        
+
         fetch(route, {
-                method: 'POST',
-                body: data,
-            }).then((response) => {
-                if (response.ok) {
+            method: 'POST',
+            body: data,
+        }).then((response) => {
+            if (response.ok) {
+                
+                response.json().then((data) => {
+                    userContext?.setUser({name: data.name, id: data.id, is_manager:data.is_manager})
                     props.history.push(Routes.home);
-                }
-                else if (response.status == 404 && route === routeType.login){
-                    setOpenDialog({ open: true, text: 'שם משתמש או סיסמא לא נכונים' });
-                }
-               
-                else if (response.status == 404 && route === routeType.createUser){
-                    setOpenDialog({ open: true, text: 'שם משתמש קיים' });
-                }
-                
-                else if(response.status == 401 && route === routeType.createUser) { 
-                    setOpenDialog({ open: true, text: 'שגיאה במסד הנתונים' });
 
-                }
+                })
                 
-            }).catch((e) => {
-                console.log(e)
-                setOpenDialog({ open: true, text: 'השגיאת מערכת.' })});
-        }
+            }
+            else if (response.status == 404 && route === routeType.login) {
+                setOpenDialog({ open: true, text: 'שם משתמש או סיסמא לא נכונים' });
+            }
 
-    
+            else if (response.status == 404 && route === routeType.createUser) {
+                setOpenDialog({ open: true, text: 'שם משתמש קיים' });
+            }
+
+            else if (response.status == 401 && route === routeType.createUser) {
+                setOpenDialog({ open: true, text: 'שגיאה במסד הנתונים' });
+
+            }
+
+        }).catch((e) => {
+            console.log(e)
+            setOpenDialog({ open: true, text: '.שגיאת מערכת' })
+        });
+    }
 
 
     return (
@@ -200,15 +207,15 @@ const Login: FunctionComponent<RouteComponentProps> = (props) => {
                         {errors.password ? <Alert className={classes.alert} dir='rtl' severity="error">שדה חובה</Alert> : <div></div>}
 
                         <Box className={classes.buttuns}>
-                            <Box  marginLeft={2} className={classes.boxButton}>
+                            <Box marginLeft={2} className={classes.boxButton}>
                                 <Button
-                                onClick={()=>onSubmit(routeType.login)}
-                                 dir='rtl' variant={'outlined'} className={classes.button}>כניסה</Button>
+                                    onClick={() => onSubmit(routeType.login)}
+                                    dir='rtl' variant={'outlined'} className={classes.button}>כניסה</Button>
                             </Box>
-                            <Box  className={classes.boxButton}>
+                            <Box className={classes.boxButton}>
                                 <Button
-                                onClick={()=>onSubmit(routeType.createUser)}
-                                dir='rtl' variant={'outlined'} className={classes.button}>משתמש חדש</Button>
+                                    onClick={() => onSubmit(routeType.createUser)}
+                                    dir='rtl' variant={'outlined'} className={classes.button}>משתמש חדש</Button>
                             </Box>
                         </Box>
 
@@ -222,7 +229,7 @@ const Login: FunctionComponent<RouteComponentProps> = (props) => {
                 dir='rtl'
 
                 open={openDialog.open}
-                onClose={()=>onCloseDialog}
+                onClose={() => onCloseDialog}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
@@ -234,7 +241,7 @@ const Login: FunctionComponent<RouteComponentProps> = (props) => {
                 <DialogActions className={classes.dialog}>
                     <Button onClick={onCloseDialog} color="primary">
                         סגור
-                </Button>
+                    </Button>
                 </DialogActions>
             </Dialog>
 

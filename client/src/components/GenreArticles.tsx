@@ -11,6 +11,7 @@ import CardNews from './CardNews';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import IconButton from '@material-ui/core/IconButton';
+import { withRouter } from 'react-router-dom';
 
 
 
@@ -41,12 +42,16 @@ const useStyles = makeStyles({
     },
 
     typoUpdateLabel: {
-        marginRight: '7px',
-        marginLeft: '7px',
-        fontSize: '3rem'
+        marginRight: '12px',
+        marginLeft: '12px',
+        fontSize: '3rem',
+        color: '#f6f6f8',
+        paddingBottom: '5px'
     },
     labelUpdates: {
-        maxInlineSize: 'max-content'
+        maxInlineSize: 'max-content',
+        backgroundColor: '#c60021',
+        marginBottom: '15px',
 
     },
     cardItem: {
@@ -113,7 +118,7 @@ const GenreArticales: FunctionComponent<GenreProps> = (props) => {
                     <div dir='rtl'>
                         <Grid container>
                             <Grid item xs={12} className={classNames(classes.gridUpdateLabel, 'center-box')}>
-                                <Box color="white" bgcolor="error.main" className={classes.labelUpdates}>
+                                <Box boxShadow={3} borderRadius={5} className={classes.labelUpdates}>
                                     <Typography variant={'h5'} className={classes.typoUpdateLabel}>{myMap.get(category)} </Typography>
                                 </Box>
                             </Grid>
@@ -157,4 +162,4 @@ const GenreArticales: FunctionComponent<GenreProps> = (props) => {
     )
 }
 
-export default GenreArticales;
+export default withRouter(GenreArticales);

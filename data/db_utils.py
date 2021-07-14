@@ -1,6 +1,6 @@
 import pymongo
 
-from CONST import API_KEY_IL, CONNECT_STR, CONNECT_LOCAL
+from CONST import API_KEY_IL, CONNECT_STR, CONNECT_LOCAL, APPROVED, MESSAGES
 from pymongo import MongoClient
 import requests
 import maya
@@ -27,7 +27,12 @@ def get_article(global_id):
 def get_collection_names(db, collection_type):
     names = db.list_collection_names()
     names = [name for name in names if collection_type in name]
-    return sorted(names, key=lambda x: (-int(x.split('_')[2]), -int(x.split('_')[1])))
+    try:
+        return sorted(names, key=lambda x: (-int(x.split('_')[2]), -int(x.split('_')[1])))
+    except ValueError:
+        return names
+    except IndexError:
+        return names
 
 
 def fetch_news_everything(page, str_date):
@@ -52,35 +57,36 @@ def fetch_news_top_headlines(page, category):
     return None
 
 
-def get_index_total_current(db, names, start):
-    i, count_total, count_current = 0, 0, 0
-    for name in names:
-        count_current = db[name].estimated_document_count()
-        count_total = count_total + count_current
-        if count_total > start:
-            break
-        i = i + 1
-    return i, count_total, count_current
-
-
-def get_news(db_news, collection_type, page, num_result):
+def get_news(db_news, collection_type, page, num_result, field=None, key=None):
     if page <= 0 or num_result <= 0:
         return []
     names = get_collection_names(db_news, collection_type)
-    start, end = (page - 1) * num_result, page * num_result
-    i, count_total, count_current = get_index_total_current(db_news, names, start)
-    if i == len(names) or start >= count_total:
-        return []
+    start = (page - 1) * num_result
+    news, count = [], 0
+    residual = 0
+    for name in names:
+        count += db_news[name].estimated_document_count()
 
-    offset_start = count_current - (count_total - start)
-    results = list(db_news[names[i]].find({}).sort('publishedAt', pymongo.DESCENDING)) \
-        [offset_start: offset_start + num_result if end <= count_total else None]
+        if count > start:
+            news += list(db_news[name].find({}).sort('publishedAt', pymongo.DESCENDING))
+            prev_len = len(news)
+            if field and key:
+                news = list(filter(lambda x: (x[field] == key), news))
+                residual += prev_len - len(news)
 
-    if len(results) == num_result or i == len(names) - 1:
-        return results
-    results_second_part = list(db_news[names[i + 1]].find({}).sort('publishedAt', pymongo.DESCENDING))[
-                          :num_result - len(results)]
-    return results + results_second_part
+            if len(news) >= num_result:
+                break
+    offset_start = start - (count - len(news)) + residual
+    print(offset_start)
+
+    return news[offset_start: offset_start + num_result]
+
+
+def generate_global_id(month, year):
+    db = get_db('local_news')
+    entry = get_collection_names(db, 'allNews')[0]
+    _id = get_last_index(db[entry]) + 1
+    return '{}_{}_{}'.format(_id, month, year)
 
 
 def perform_search(collection, key):
@@ -91,12 +97,14 @@ def perform_search(collection, key):
     return result
 
 
-def get_collection_and_id(db, month, year, collection_type):
-    db_entry = '{}_{}_{}'.format(collection_type, month, year)
-    collection = db[db_entry]
-    records = collection.find({'$query': {}, '$orderby': {"_id": -1}})
-    records = list(records) if records else None
-    start_id = int(records[0]['_id']) if records else 0
+def get_collection(db, month=1, year=2000, collection_type='', default_entry=None):
+    db_entry = '{}_{}_{}'.format(collection_type, month, year) if not default_entry else default_entry
+    return db[db_entry]
+
+
+def get_collection_and_id(db, month=1, year=2000, collection_type='', default_name=None):
+    collection = get_collection(db, month, year, collection_type, default_name)
+    start_id = get_last_index(collection)
     return collection, start_id
 
 
@@ -145,29 +153,32 @@ def fetch_category_articles(db_news, category):
         data = fetch_news_top_headlines(page, category)
 
 
-# def insert_article(db, collection_type, article):
-
-
-def create_article(title, description, author, date, coll_type):
+def create_article(title, description, author, category, coll_type, date_iso, status=APPROVED):
+    date = maya.parse(date_iso).datetime()
     article = {
+        '_id': get_last_index(get_collection(get_db('local_news'), default_entry=coll_type)) + 1,
         'title': title,
         'description': description,
         'author': author,
-        'publishedAt': date
+        'category': category,
+        'publishedAt': date,
+        'status': status,
+        'urlToImage': '',
+        'global_id': generate_global_id(date.month, date.year),
+        'isExternal': False
     }
-    date = maya.parse(date)
-    collection, _id = get_collection_and_id(get_db('local_news'), date.month, date.year, coll_type)
 
-    article['_id'] = _id + 1
-    return collection, article
+    print(article['_id'])
+
+    return article
 
 
 # change the code beneath
-def process_article_all_news(article, start_id, date):
+def process_article_all_news(article, start_id, date, is_external=True):
     article.pop('content')
     article.update({'_id': start_id + 1})
     article.update({'global_id': '{}_{}_{}'.format(start_id + 1, date.month, date.year)})
-    article['isExternal'] = True
+    article['isExternal'] = is_external
     return article
 
 
@@ -230,6 +241,76 @@ def get_relevant_date(db_news):
         if date > relevant_date:
             relevant_date = date
     return relevant_date
+
+
+def insert_article(article, coll_type):
+    db = get_db('local_news')
+    date = maya.parse(article['publishedAt']).datetime()
+
+    coll = get_collection(db, date.month, date.year, coll_type)
+    article['_id'] = get_last_index(coll) + 1
+
+    if coll.find_one({'description': article['description']}):
+        print('article present')
+        return
+
+    coll.insert_one(article)
+
+
+def add_message(to, content):
+    db = get_db('local_news')
+    coll_mess = db[MESSAGES]
+
+    message = {
+        '_id': get_last_index(coll_mess) + 1,
+        'to': to,
+        'isNew': True,
+        'content': content,
+        'time': maya.now().iso8601()
+    }
+
+    coll_mess.insert_one(message)
+
+
+def add_favorite(username, global_id, is_marked):
+    users = get_collection(get_db('local_news'), default_entry='users')
+    user = users.find_one({'username': username})
+    if not user:
+        return []
+
+    if is_marked:
+        print('removing')
+        if global_id in user['favorites']:
+            user['favorites'].remove(global_id)
+    else:
+        print('adding')
+        if global_id not in user['favorites']:
+            user['favorites'].append(global_id)
+
+    users.replace_one({'username': username}, user)
+    return user['favorites']
+
+
+def remove_article(global_id):
+    db = get_db('local_news')
+
+    coll_temp_articles = get_collection(db, default_entry='temp_articles')
+    article = coll_temp_articles.find_one({'global_id': global_id})
+
+    if not article:
+        return False
+
+    coll_temp_articles.delete_one({'global_id': global_id})
+
+    _, month, year = global_id.split('_')
+    coll_all_news = get_collection(db, month, year, 'allNews')
+    coll_all_news.delete_one({'global_id': global_id})
+
+    if article['status'] == APPROVED:
+        coll_category = get_collection(db, month, year, article['category'])
+        coll_category.delete_one({'global_id': global_id})
+
+    return True
 
 
 def get_entry_city(city):
