@@ -14,6 +14,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import IconButton from '@material-ui/core/IconButton';
 import FavoriteIcon from '@material-ui/icons/Favorite';
+import { type } from 'node:os';
 
 
 
@@ -88,6 +89,13 @@ const useStyles = makeStyles(() =>
             margin: '0px',
 
         },
+        date: {
+            fontSize: "18px"
+        },
+        gridDate: {
+            marginTop: '30px',
+            marginLeft: '15px'
+        },
 
         progress: {
             display: 'flex',
@@ -140,6 +148,11 @@ const Article: FunctionComponent<ArticleProps> = (props) => {
         }))
     }, []);
 
+    const toDate = (time: string) => {
+        var date = new Date(time);
+       return date.getFullYear()+'-' + (date.getMonth()+1) + '-'+date.getDate();        
+    }
+
     const markFavorite = async (user: string, global_id: string) => {
         await fetch(`/markFavorite?user=${user}&id=${global_id}&isMarked=${isFavorite}`,
             {
@@ -182,8 +195,8 @@ const Article: FunctionComponent<ArticleProps> = (props) => {
 
                     <Box className={classes.box} boxShadow={24} borderRadius={20}>
                         <Grid container >
-                            <Grid item xs={12} className={classes.icon}>
-
+                            <Grid container justify={"space-between"} >
+                               <Grid item className={classes.icon}>
                                 <IconButton onClick={() => history.goBack()}>
                                     <ArrowForwardIcon fontSize='large' />
                                 </IconButton>
@@ -194,6 +207,16 @@ const Article: FunctionComponent<ArticleProps> = (props) => {
                                 }}>
                                     <FavoriteIcon className={isFavorite ? classes.iconRed : ''} fontSize="large" />
                                 </IconButton>
+                                </Grid>
+                                <Grid item className={classes.gridDate}>
+                                <Typography variant="overline"  className={classes.date}>
+                                {
+                                 data? toDate(data.date) : ""
+                                }    
+                                </Typography>
+                                </Grid>
+                                    
+                                
                             </Grid>
 
                             <Grid item xs={12}>

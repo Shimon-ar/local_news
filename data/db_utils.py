@@ -47,7 +47,7 @@ def fetch_news_everything(page, str_date):
 
 def fetch_news_top_headlines(page, category):
     url = 'https://newsapi.org/v2/top-headlines?country=il&page={}&category={}&apiKey={}' \
-        .format(page, category, API_KEY_IL) if category else \
+        .format(page, category, API_KEY_IL) if category != 'topHeadLines' else \
         'https://newsapi.org/v2/top-headlines?country=il&page={}&apiKey={}' \
             .format(page, API_KEY_IL)
     r = requests.get(url)
@@ -85,7 +85,7 @@ def get_news(db_news, collection_type, page, num_result, field=None, key=None):
 def generate_global_id(month, year):
     db = get_db('local_news')
     entry = get_collection_names(db, 'allNews')[0]
-    _id = get_last_index(db[entry]) + 1
+    _id = get_last_index(db[entry], True) + 1
     return '{}_{}_{}'.format(_id, month, year)
 
 
@@ -108,10 +108,16 @@ def get_collection_and_id(db, month=1, year=2000, collection_type='', default_na
     return collection, start_id
 
 
-def get_last_index(collection):
+def get_last_index(collection, is_global=False):
     records = collection.find({'$query': {}, '$orderby': {"_id": -1}})
     records = list(records) if records else None
-    return int(records[0]['_id']) if records else 0
+
+    if records:
+        if is_global:
+            return int(records[0]['global_id'].split('_')[0])
+        else:
+            return int(records[0]['_id'])
+    return 0
 
 
 def handle_category_articles(db_news, articles, category='topHeadLines'):
@@ -136,13 +142,13 @@ def handle_category_articles(db_news, articles, category='topHeadLines'):
 
         processed_article = process_article_category(db_news, article, article_date, start_id, category)
 
-        if not collection.find_one({'global_id': processed_article['global_id']}):
+        if processed_article and not collection.find_one({'global_id': processed_article['global_id']}):
             collection.insert_one(processed_article)
             start_id = start_id + 1
             print('-- Entered Article:{}'.format(start_id))
 
 
-def fetch_category_articles(db_news, category):
+def fetch_category_articles(db_news, category='topHeadLines'):
     page = 1
     data = fetch_news_top_headlines(page, category)
     while data and len(data['articles']) > 0:
@@ -174,11 +180,13 @@ def create_article(title, description, author, category, coll_type, date_iso, st
 
 
 # change the code beneath
-def process_article_all_news(article, start_id, date, is_external=True):
+def process_article_all_news(article, start_id, date, category, is_external=True):
     article.pop('content')
     article.update({'_id': start_id + 1})
-    article.update({'global_id': '{}_{}_{}'.format(start_id + 1, date.month, date.year)})
+    article.update({'global_id': generate_global_id(date.month, date.year)})
     article['isExternal'] = is_external
+    article['category'] = category
+
     return article
 
 
@@ -189,12 +197,16 @@ def process_article_category(db_news, article, article_date, start_id, category)
     collection, start_id = get_collection_and_id(db_news, article_date.month, article_date.year, 'allNews')
     result = collection.find_one({'title': article['title']})
     if not result:
-        result = process_article_all_news(article, start_id, article_date)
+        result = process_article_all_news(article, start_id, article_date, category)
         collection.insert_one(result)
         print('-- Insert Article to all_news global_id:{}'.format(result['global_id']))
-    processed_article['global_id'] = result['global_id']
-    processed_article['isExternal'] = True
-    return processed_article
+
+    if not result or category == 'topHeadLines':
+        processed_article['global_id'] = result['global_id']
+        processed_article['isExternal'] = True
+        return processed_article
+
+    return None
 
 
 def insert_news_to_db(db_news, old_date):

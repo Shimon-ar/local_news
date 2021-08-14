@@ -47,9 +47,12 @@ def search_news():
     db = db_utils.get_db('local_news')
     names = db_utils.get_collection_names(db, 'allNews')
 
-    result = db_utils.perform_search(db[names[0]], city)
-    if len(result) < 10 and len(names) > 1:
-        result += db_utils.perform_search(db[names[1]], city)
+    result = []
+
+    for name in names:
+        result += db_utils.perform_search(db[name], city)
+        if len(result) > 10:
+            break
 
     offset = (page_num - 1) * 10
 
@@ -95,7 +98,8 @@ def get_article_data(global_id):
         'subtitle': subtitle,
         'body': body,
         'image': article['urlToImage'],
-        'isExternal': article['isExternal']
+        'isExternal': article['isExternal'],
+        'date': article['publishedAt']
     })
 
 
@@ -112,7 +116,7 @@ def upload_article():
         image = request.files['file']
         if image:
             type_img = image.filename.split('.')[-1]
-            file_name = '{}.{}'.format(article['_id'], type_img)
+            file_name = '{}.{}'.format(article['global_id'], type_img)
             mongo.save_file(file_name, image)
             article['urlToImage'] = '/image/' + file_name
     else:

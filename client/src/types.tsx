@@ -32,7 +32,8 @@ export type Article_data = {
     subtitle: string,
     image: string,
     body: string[],
-    isExternal: boolean
+    isExternal: boolean,
+    date: string
 }
 
 export type User = {

@@ -121,7 +121,7 @@ const useStyles = makeStyles(theme =>  ({
 
     progress: {
         display: 'flex',
-        backgroundColor: 'white',
+        backgroundColor: 'transparent',
         textAlign: 'center',
         position: 'fixed',
         top: '50%',
