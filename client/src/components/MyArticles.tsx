@@ -82,7 +82,7 @@ const useStyles = makeStyles(theme =>  ({
     card: {
         direction: 'rtl',
         display: 'flex',
-        height: "250px",
+        height: "265px",
         backgroundColor: '#f6f6f8'
     },
     details: {
@@ -101,7 +101,7 @@ const useStyles = makeStyles(theme =>  ({
     },
     cover: {
         width: 150,
-        height: 250
+        height: 265
       },
 
     controls: {
@@ -252,7 +252,7 @@ const MyArticles: FunctionComponent<RouteComponentProps> = (props) => {
                                                 <DeleteIcon/>   
                                                 </IconButton>
 
-                                                <IconButton
+                                                <IconButton 
                                                     onClick={() => {
                                                         props.history.push(Routes.article + '/' + article.global_id);
                                                     }}>

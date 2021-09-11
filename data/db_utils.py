@@ -196,17 +196,19 @@ def process_article_category(db_news, article, article_date, start_id, category)
     processed_article.pop('content')
     collection, start_id = get_collection_and_id(db_news, article_date.month, article_date.year, 'allNews')
     result = collection.find_one({'title': article['title']})
+
+    if result and category != 'topHeadLines':
+        print('Article present in database')
+        return None
+
     if not result:
         result = process_article_all_news(article, start_id, article_date, category)
         collection.insert_one(result)
         print('-- Insert Article to all_news global_id:{}'.format(result['global_id']))
 
-    if not result or category == 'topHeadLines':
-        processed_article['global_id'] = result['global_id']
-        processed_article['isExternal'] = True
-        return processed_article
-
-    return None
+    processed_article['global_id'] = result['global_id']
+    processed_article['isExternal'] = True
+    return processed_article
 
 
 def insert_news_to_db(db_news, old_date):

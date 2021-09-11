@@ -94,7 +94,7 @@ const useStyles = makeStyles({
         fontWeight: 700
     },
     publish: {
-        margin: '50px'
+        margin: '35px'
     },
     dialog: {
         alignSelf: 'center'
